@@ -1,0 +1,18 @@
+#Passos para adição de uma nova funcionalidade na calculadora
+
+# Pontos Iniciais #
+
+  * O módulo que organiza os dados de interface da calculadora, incluindo disposicao de botoes, é o CalcGui. Alem dessa temos modulos que lidam com a tabela de amortizacao (calcTabelDialog), com a tabela de recall (recallViewDialog), com a tabela de store (storeViewDialog) e a representacao generica de um botao (calcButton).
+  * Existe um componente que representa um botão (calcButton) podendo esses ter adicionados até 3 textos de funcoes: uma na parte superior, um na parte inferior e um na parte central. Os botoes estao dispostos num gridLayout.
+  * O controller captura todos os eventos de teclas pressionadas, considerando o texto intermediário que representa a funcao principal de cada tecla. E em seguida chama uma acao correspondente no model (calcModel)
+  * O calcModel possui o estado da calculadora (opcoes de arredondamento, tecla especial f ou g pressionados, amortizacoa SAF ou SAC selecionadas) e conhece a pilha (calcStack), os demais registradores (calcRegs) e as funções da biblioteca.
+  * As varias funcoes presentes no model representam chamadas as teclas de uma dada funcao principal (a funcao que fica no meio dos botoes). Dado que o model conhece o estado da calculadora, em cada uma dessas chamadas verifica-se que funcao da biblioteca usar (de acordo com o F ou G estarem pressionados, se eh SAF ou SAC, etc).
+  * O model trabalha no esquema de Observer, onde tem-se varios listeners para eventos como modificacao do valor da tela, modificacao da pilha, etc. Ao final de cada funcao faz-se as acoes necessarias: desativar F ou G pressionados; avisar listeners sobre alteracoes na pilha, registradores financeiros, etc, dependendo do que a funcao faca; alertar a interface sobre modificacao na tela, no estado dos botoes ou sobre necessidade de mostrar a tabela de amortizacao ou a tabela de recall ou store
+  * Os dados fornecidos de volta aos listeners estao sempre no formato de Decimal, que eh o tipo trabalhado pela calculadora de modo a alcancar alta precisao. Cada interface formata esses dados como queira usando os metodos de formatacao do modulo calcFormatUtil.
+
+> Passo a passo:
+  * Criar uma instancia de calcButton em calcGui com os labels relativos a funcao desejada
+  * Adicionar esse botao em uma certa posicao no layout, no caso estamos usando um gridLayout onde as posicoes sao dadas por coordenadas (x,y).
+  * Adicionar no metodo keyboardButtonClicked do Controller a captura do evento de pressionamento do botao considerando seu label de funcao principal (seu label central). E redirecionar para a chamada de uma funcao no model
+  * No model criar a funcao chamada no controller. Nela verificar qual acao tomar, se for o caso olhar se o botao F e G estao pressionados, se esta selecionado o SAF ou SAC, e chamar um novo metodo na biblioteca fornecendo-lhe valores dos registradores. Os registradores podem ser da pilha (calcStack), ou dos demais registradores (calcRegs), onde temos os financeiros (i, pv, fv, ...) ou os outros 18 registradores (cashFlowRegs).
+  * Com o resultado da funcao em maos, setar algum dos registradores conforme seja necessario. Desativar as teclas F e G, e conforme o que for modificado (tela, pilha, registradores financeiros, etc) avisar os devidos listeners sobre as alteracoes. Um ponto importante é também alterar o modo de entrada de dados da calculadora de acordo com a funcionalidade desejada, existem basicamente tres: Mode.SaveMode (que devolve o valor 0.0 a tela), Mode.OperationMode (devolve zero a tela mas antes da um enter na pilha) e Mode.EntryMode (que indica que numeros estao sendo entrados na tela).
